@@ -24,6 +24,8 @@ export function Navbar() {
     cartCount,
     setIsCartOpen,
     setIsVaultOpen,
+    const [currentLang, setCurrentLang] = useState<'en' | 'fr' | 'ar'>('en');
+    const [currentLang, setCurrentLang] = useState<'en' | 'fr' | 'ar'>('en');
     searchQuery,
     setSearchQuery,
     orders,
@@ -187,6 +189,54 @@ export function Navbar() {
               Contact
             </button>
           </nav>
+          {/* Sélecteur de Langue (EN officiel, FR, AR avec RTL) */}
+        <div className="hidden lg:flex items-center gap-1 bg-slate-900/80 border border-slate-800 rounded-xl p-1 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentLang('en');
+              document.documentElement.dir = 'ltr';
+              document.documentElement.lang = 'en';
+            }}
+            className={`px-2.5 py-1 rounded-lg transition-all ${
+              currentLang === 'en'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentLang('fr');
+              document.documentElement.dir = 'ltr';
+              document.documentElement.lang = 'fr';
+            }}
+            className={`px-2.5 py-1 rounded-lg transition-all ${
+              currentLang === 'fr'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            FR
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentLang('ar');
+              document.documentElement.dir = 'rtl';
+              document.documentElement.lang = 'ar';
+            }}
+            className={`px-2.5 py-1 rounded-lg transition-all ${
+              currentLang === 'ar'
+                ? 'bg-emerald-600 text-white shadow-sm font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            عربي
+          </button>
+        </div>
 
           {/* Quick Search Input */}
           <div className="hidden md:flex items-center flex-1 max-w-xs relative mx-2">
