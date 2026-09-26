@@ -206,6 +206,27 @@ export function Navbar() {
           >
             EN
           </button>
+         
+
+          {/* Quick Search Input */}
+          <div className="hidden md:flex items-center flex-1 max-w-xs relative mx-2">
+            {/* Sélecteur de Langue (EN, FR, AR) */}
+        <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-xl p-1 text-xs font-semibold mr-1">
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentLang('en');
+              document.documentElement.dir = 'ltr';
+              document.documentElement.lang = 'en';
+            }}
+            className={`px-2 py-1 rounded-lg transition-all ${
+              currentLang === 'en'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            EN
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -213,7 +234,7 @@ export function Navbar() {
               document.documentElement.dir = 'ltr';
               document.documentElement.lang = 'fr';
             }}
-            className={`px-2.5 py-1 rounded-lg transition-all ${
+            className={`px-2 py-1 rounded-lg transition-all ${
               currentLang === 'fr'
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
@@ -228,7 +249,7 @@ export function Navbar() {
               document.documentElement.dir = 'rtl';
               document.documentElement.lang = 'ar';
             }}
-            className={`px-2.5 py-1 rounded-lg transition-all ${
+            className={`px-2 py-1 rounded-lg transition-all ${
               currentLang === 'ar'
                 ? 'bg-emerald-600 text-white shadow-sm font-bold'
                 : 'text-slate-400 hover:text-slate-200'
@@ -237,9 +258,6 @@ export function Navbar() {
             عربي
           </button>
         </div>
-
-          {/* Quick Search Input */}
-          <div className="hidden md:flex items-center flex-1 max-w-xs relative mx-2">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
             <input
               type="text"
