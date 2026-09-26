@@ -259,6 +259,25 @@ function MerciContent() {
             </div>
           </div>
         </div>
+        {/* Bloc de téléchargement du code source .ZIP */}
+          <div className="my-8 p-6 bg-slate-900/90 border border-slate-800 rounded-2xl text-center shadow-xl">
+            <h3 className="text-base font-bold text-white mb-2">
+              📦 Fichiers sources & Livrables du projet
+            </h3>
+            <p className="text-xs text-slate-400 mb-5 max-w-md mx-auto">
+              Téléchargez l'archive complète de l'application prête à l'emploi directement sur votre ordinateur.
+            </p>
+            <a
+              href="/code-source.zip"
+              download="code-source.zip"
+              className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Télécharger le code source (.ZIP)
+            </a>
+          </div>
 
         {/* Bottom Reassurance Footer */}
         <div className="text-center text-xs text-slate-500 space-y-1">
