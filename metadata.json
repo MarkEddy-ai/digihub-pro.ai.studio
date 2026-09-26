@@ -1,0 +1,6 @@
+{
+  "name": "NOVALYS Digital | Marketplace de Produits Numériques & Licences",
+  "description": "Plateforme e-commerce premium spécialisée dans la vente de produits numériques, abonnements IA, logiciels, licences officielles et gaming avec livraison instantanée.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
