@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useShop } from '@/context/ShopContext';
 import { NovalysLogo } from '@/components/ui/NovalysLogo';
 import { CATEGORIES } from '@/data/categories';
+import { translations, Language } from '@/data/translations';
 import {
   ShoppingBag,
   KeyRound,
@@ -29,9 +30,11 @@ export function Navbar() {
     orders,
   } = useShop();
 
-  const [currentLang, setCurrentLang] = useState<'en' | 'fr' | 'ar'>('en');
+  const [currentLang, setCurrentLang] = useState<Language>('fr');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+
+  const t = translations[currentLang];
 
   const totalVaultLicenses = orders.reduce(
     (sum, ord) => sum + (ord.licenses ? ord.licenses.length : 0),
@@ -48,7 +51,7 @@ export function Navbar() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const changeLanguage = (lang: 'en' | 'fr' | 'ar') => {
+  const changeLanguage = (lang: Language) => {
     setCurrentLang(lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -56,33 +59,33 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-800/80">
-      {/* Micro-barre supérieure : rassurance */}
+      {/* Top micro-bar: announcements */}
       <div className="bg-gradient-to-r from-cyan-950/60 via-slate-900 to-cyan-950/60 border-b border-cyan-900/30 py-1.5 px-4 text-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-slate-300">
           <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
             <span className="flex items-center gap-1 text-emerald-400 font-medium">
               <Zap className="w-3.5 h-3.5" />
-              Paiement sécurisé &amp; Clés certifiées 100% officielles
+              {t.secureBanner}
             </span>
             <span className="text-slate-600 hidden sm:inline">|</span>
             <span className="hidden sm:inline text-slate-300">
-              Livraison instantanée par email &amp; coffre
+              {t.instantDelivery}
             </span>
             <span className="text-slate-600 hidden md:inline">|</span>
             <span className="hidden md:inline text-amber-300/90 font-mono">
-              Code -10% : NOVALYS10
+              {t.promoCode}
             </span>
           </div>
 
           <div className="flex items-center gap-3 shrink-0 text-slate-400">
             <span className="text-slate-300 hidden sm:inline text-xs">
-              Support client 24/7 disponible
+              {t.support24}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Barre de navigation principale */}
+      {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 gap-3">
           {/* Logo */}
@@ -94,7 +97,7 @@ export function Navbar() {
             />
           </div>
 
-          {/* Navigation Liens Desktop */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden xl:flex items-center gap-1 text-sm font-medium">
             <button
               type="button"
@@ -105,10 +108,10 @@ export function Navbar() {
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              Accueil
+              {t.home}
             </button>
 
-            {/* Menu Déroulant Catégories */}
+            {/* Categories Dropdown */}
             <div className="relative">
               <button
                 type="button"
@@ -120,23 +123,20 @@ export function Navbar() {
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
-                <span>Catalogue &amp; Catégories</span>
+                <span>{t.catalog}</span>
                 <ChevronDown className="w-4 h-4 text-slate-400 transition-transform duration-200" />
               </button>
 
               {isCategoryMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-80 bg-[#0F172A] border border-slate-800 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800/80 mb-1">
-                    Rayons numériques
-                  </div>
                   <button
                     type="button"
                     onClick={() => handleNavClick('catalog', 'all')}
                     className="w-full text-left px-3 py-2 text-xs font-semibold text-cyan-400 hover:bg-cyan-950/40 rounded-lg flex items-center justify-between cursor-pointer"
                   >
-                    <span>Voir tout le catalogue</span>
+                    <span>{t.allCatalog}</span>
                     <span className="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded font-mono">
-                      Tous
+                      All
                     </span>
                   </button>
                   <div className="grid grid-cols-1 gap-0.5 max-h-72 overflow-y-auto mt-1 pr-1">
@@ -172,7 +172,7 @@ export function Navbar() {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Promotions</span>
+              <span>{t.promotions}</span>
             </button>
 
             <button
@@ -184,7 +184,7 @@ export function Navbar() {
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              À Propos
+              {t.about}
             </button>
 
             <button
@@ -196,16 +196,16 @@ export function Navbar() {
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              Contact
+              {t.contact}
             </button>
           </nav>
 
-          {/* Barre de Recherche Rapide */}
+          {/* Quick Search */}
           <div className="hidden md:flex items-center flex-1 max-w-xs relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -224,9 +224,9 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Actions : Sélecteur de Langue + Mes Licences + Panier */}
+          {/* Action Area: Language Switcher + Licenses + Cart */}
           <div className="flex items-center gap-2">
-            {/* Sélecteur de Langue (EN, FR, AR RTL) */}
+            {/* Language Switcher */}
             <div className="flex items-center gap-0.5 bg-slate-900 border border-slate-800 rounded-xl p-1 text-[11px] font-semibold">
               <button
                 type="button"
@@ -263,7 +263,7 @@ export function Navbar() {
               </button>
             </div>
 
-            {/* Bouton Mes Licences */}
+            {/* License Vault Button */}
             <button
               type="button"
               onClick={() => setIsVaultOpen(true)}
@@ -271,7 +271,7 @@ export function Navbar() {
               title="Accéder à vos clés et licences activées"
             >
               <KeyRound className="w-4 h-4 text-cyan-400" />
-              <span className="hidden sm:inline">Mes Licences</span>
+              <span className="hidden sm:inline">{t.licenses}</span>
               {totalVaultLicenses > 0 && (
                 <span className="ml-1 bg-cyan-500/20 text-cyan-300 font-mono text-[10px] px-1.5 py-0.2 rounded-full border border-cyan-500/40">
                   {totalVaultLicenses}
@@ -279,14 +279,14 @@ export function Navbar() {
               )}
             </button>
 
-            {/* Bouton Panier */}
+            {/* Cart Button */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
               className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 transition-all shadow-lg shadow-cyan-500/10 active:scale-95 cursor-pointer"
             >
               <ShoppingBag className="w-4 h-4 text-slate-950" />
-              <span className="hidden sm:inline font-bold">Panier</span>
+              <span className="hidden sm:inline font-bold">{t.cart}</span>
               {cartCount > 0 ? (
                 <span className="bg-slate-950 text-cyan-300 text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center font-mono">
                   {cartCount}
@@ -296,7 +296,7 @@ export function Navbar() {
               )}
             </button>
 
-            {/* Menu Burger Mobile */}
+            {/* Mobile Burger */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -309,14 +309,14 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Tiroir Mobile */}
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="xl:hidden bg-[#0F172A] border-b border-slate-800 px-4 py-4 space-y-3 animate-in fade-in">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -334,7 +334,7 @@ export function Navbar() {
                 activeTab === 'home' ? 'bg-cyan-950/60 text-cyan-300' : 'bg-slate-900 text-slate-300'
               }`}
             >
-              Accueil
+              {t.home}
             </button>
             <button
               type="button"
@@ -343,7 +343,7 @@ export function Navbar() {
                 activeTab === 'catalog' ? 'bg-cyan-950/60 text-cyan-300' : 'bg-slate-900 text-slate-300'
               }`}
             >
-              Boutique Complète
+              {t.allCatalog}
             </button>
             <button
               type="button"
@@ -352,7 +352,7 @@ export function Navbar() {
                 activeTab === 'promotions' ? 'bg-cyan-950/60 text-cyan-300' : 'bg-slate-900 text-slate-300'
               }`}
             >
-              🔥 Promotions
+              🔥 {t.promotions}
             </button>
             <button
               type="button"
@@ -361,7 +361,7 @@ export function Navbar() {
                 activeTab === 'about' ? 'bg-cyan-950/60 text-cyan-300' : 'bg-slate-900 text-slate-300'
               }`}
             >
-              À Propos
+              {t.about}
             </button>
             <button
               type="button"
@@ -370,25 +370,8 @@ export function Navbar() {
                 activeTab === 'contact' ? 'bg-cyan-950/60 text-cyan-300' : 'bg-slate-900 text-slate-300'
               }`}
             >
-              Contact &amp; Assistance
+              {t.contact}
             </button>
-          </div>
-
-          <div className="pt-2 border-t border-slate-800">
-            <div className="text-xs text-slate-400 mb-2 font-semibold uppercase">Catégories</div>
-            <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-1">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleNavClick('catalog', cat.id)}
-                  className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:text-cyan-300 flex justify-between cursor-pointer"
-                >
-                  <span>{cat.name}</span>
-                  <span className="text-slate-500 text-[10px] font-mono">{cat.productCount}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}
