@@ -55,6 +55,7 @@ import {
   generateInitialVisits,
   computeAnalyticsSummary,
 } from '@/data/analyticsData';
+import { Language } from '@/data/translations';
 import confetti from 'canvas-confetti';
 
 interface Toast {
@@ -97,6 +98,10 @@ export interface ProfitMetrics {
 }
 
 interface ShopContextType {
+  // Multilingual State
+  currentLang: Language;
+  setCurrentLang: (lang: Language) => void;
+
   // Navigation & Page State
   activeTab: 'home' | 'catalog' | 'product-detail' | 'promotions' | 'about' | 'contact' | 'legal' | 'admin';
   setActiveTab: (tab: 'home' | 'catalog' | 'product-detail' | 'promotions' | 'about' | 'contact' | 'legal' | 'admin') => void;
@@ -285,8 +290,8 @@ const STORAGE_KEY_REVIEWS = 'novalys_verified_reviews_v2';
 const STORAGE_KEY_REF_CODE = 'novalys_ref_code';
 const STORAGE_KEY_CRM_CUSTOMERS = 'novalys_crm_customers_v1';
 const STORAGE_KEY_CRM_CAMPAIGNS = 'novalys_crm_campaigns_v1';
+const STORAGE_KEY_LANG = 'novalys_user_lang_v1';
 
-// Realistic sample initial orders for immediate testing of multi-region and automated vs manual workflows
 const SAMPLE_INITIAL_ORDERS: Order[] = [
   {
     id: 'ord-baridimob-01',
@@ -568,13 +573,48 @@ const SAMPLE_INITIAL_ORDERS: Order[] = [
 ];
 
 export function ShopProvider({ children }: { children: React.ReactNode }) {
+  // Multilingual State with Persistence and DOM Direction Control
+  const [currentLang, setCurrentLangState] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_LANG) as Language;
+        if (saved && (saved === 'fr' || saved === 'en' || saved === 'ar')) {
+          return saved;
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return 'fr';
+  });
+
+  const setCurrentLang = useCallback((lang: Language) => {
+    setCurrentLangState(lang);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY_LANG, lang);
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    }
+  }, [currentLang]);
+
   const [activeTab, setActiveTab] = useState<'home' | 'catalog' | 'product-detail' | 'promotions' | 'about' | 'contact' | 'legal' | 'admin'>('home');
   const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLegalPage, setActiveLegalPage] = useState<'cgv' | 'privacy' | 'refund' | 'delivery' | 'faq'>('cgv');
 
-  // Digital Items (The physical key stock) with persistence
+  // Digital Items with persistence
   const [digitalItems, setDigitalItems] = useState<DigitalItem[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -881,7 +921,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
       for (let i = 0; i < count; i++) {
         const loc = locales[Math.floor(Math.random() * locales.length)];
-        const isConverted = Math.random() < 0.095; // ~9.5% conversion rate
+        const isConverted = Math.random() < 0.095;
         const bump = isConverted ? Math.random() < 0.44 : false;
         const upsell = isConverted ? Math.random() < 0.32 : false;
         let rev = funnelSlug.includes('windows') ? 14.99 : funnelSlug.includes('chatgpt') ? 12.99 : 24.99;
@@ -944,7 +984,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [verifiedReviews]);
 
-  // Increment clicks for active referral code once on session start
   useEffect(() => {
     if (!activeReferralCode) return;
     const timer = setTimeout(() => {
@@ -1189,12 +1228,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       const flag =
         selectedCurrency === 'DZD' ? '🇩🇿' : selectedCurrency === 'SAR' ? '🇸🇦' : selectedCurrency === 'AED' ? '🇦🇪' : '🌐';
 
-      let isNewLead = false;
-
       setCrmCustomers((prev) => {
         const existing = prev.find((c) => c.email.toLowerCase() === cleanEmail);
         if (existing) {
-          // If already exists, keep tag (don't downgrade buyers) but update contact date
           return prev.map((c) =>
             c.email.toLowerCase() === cleanEmail
               ? { ...c, lastContactDate: new Date().toISOString() }
@@ -1202,7 +1238,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        isNewLead = true;
         const newLead: CrmCustomer = {
           id: `crm-${Date.now()}`,
           name: customerName,
@@ -1375,7 +1410,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       };
     });
     showToast(`Configuration de la passerelle "${gatewayId.toUpperCase()}" enregistrée !`, 'success');
-  }, []);
+  }, [showToast]);
 
   const toggleGateway = useCallback((gatewayId: PaymentGatewayId) => {
     setPaymentGateways((prev) => {
@@ -1385,13 +1420,13 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       showToast(`Passerelle ${current.name} ${updated.enabled ? 'activée' : 'désactivée'}.`, 'info');
       return { ...prev, [gatewayId]: updated };
     });
-  }, []);
+  }, [showToast]);
 
   const updateExchangeRate = useCallback((currency: Currency, rate: number) => {
     if (rate <= 0) return;
     setExchangeRates((prev) => ({ ...prev, [currency]: rate }));
     showToast(`Taux de change pour ${currency} mis à jour : 1 USD = ${rate} ${currency}`, 'info');
-  }, []);
+  }, [showToast]);
 
   // Sync digital items to LocalStorage
   useEffect(() => {
@@ -1536,18 +1571,16 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const priceKwd = product.price_kwd || Math.round(priceUsd * rateKwd * 100) / 100;
     const priceQar = product.price_qar || Math.round(priceUsd * rateQar * 10) / 10;
     const priceBhd = product.price_bhd || Math.round(priceUsd * rateBhd * 100) / 100;
-    const priceOmr = product.price_omr || Math.round(priceUsd * rateOmr * 100) / 100;
+    const priceOmr = product.price_omr || Math.round(priceUsd * rateOmr * 10) / 10;
 
     // Margins
     const marginUsd = Math.round((priceUsd - costUsd) * 100) / 100;
     const marginPercentUsd = priceUsd > 0 ? Math.round((marginUsd / priceUsd) * 100) : 0;
 
-    // Converted cost in DZD (Parallel rate ~ 230 DZD/USD for gaming keys imported via crypto/binance)
     const costDzdEstimated = Math.round(costUsd * rateDzd);
     const marginDzdEstimated = priceDzd - costDzdEstimated;
     const marginPercentDzd = priceDzd > 0 ? Math.round((marginDzdEstimated / priceDzd) * 100) : 0;
 
-    // Converted cost in SAR (1 USD = 3.75 SAR)
     const costSarEstimated = Math.round(costUsd * rateSar * 10) / 10;
     const marginSarEstimated = Math.round((priceSar - costSarEstimated) * 10) / 10;
     const marginPercentSar = priceSar > 0 ? Math.round((marginSarEstimated / priceSar) * 100) : 0;
@@ -1587,7 +1620,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       return { success: true, deliveredKey: order.delivered_secret_data || undefined, message: 'Déjà livrée' };
     }
 
-    // Determine targeted product
     const primaryItem = order.items && order.items[0];
     const targetProductId = primaryItem?.productId;
 
@@ -1596,7 +1628,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: 'Article manquant' };
     }
 
-    // Search for an available key
     const availableKey = digitalItems.find((k) => k.product_id === targetProductId && !k.is_delivered);
 
     if (!availableKey) {
@@ -1610,14 +1641,12 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // Mark key as delivered
     setDigitalItems((prev) =>
       prev.map((k) =>
         k.id === availableKey.id ? { ...k, is_delivered: true, order_id: orderId } : k
       )
     );
 
-    // Update order status to completed and attach key
     setOrders((prev) =>
       prev.map((ord) =>
         ord.id === orderId
@@ -1631,7 +1660,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       )
     );
 
-    // Celebration confetti
     try {
       confetti({
         particleCount: 120,
@@ -1726,7 +1754,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       return newOrder;
     }
 
-    // Automated order (Stripe / PayPal / Tap Payments / Crypto) -> Auto-delivered immediately!
     const availableKey = digitalItems.find((k) => k.product_id === targetProduct.id && !k.is_delivered);
     const assignedKeyData = availableKey ? availableKey.secret_data : `OFFICIAL-KEY-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
@@ -2001,7 +2028,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     setCart([]);
     setAppliedPromo(null);
 
-    // Attribute commission if customer arrived via affiliate link
     if (activeReferralCode) {
       const matchedAff = affiliates.find(
         (a) => a.code.toLowerCase() === activeReferralCode.toLowerCase()
@@ -2050,7 +2076,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Sync customer purchase to CRM Base
     if (customer.email) {
       const cleanEmail = customer.email.trim().toLowerCase();
       const boughtProducts = orderItems.map((i) => i.productName);
@@ -2323,7 +2348,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     showToast('Déconnexion de l\'espace Administration effectuée.', 'info');
   };
 
-  // Calculate stats rapides (Total ventes du jour par devise, clés restantes en stock, alertes < 3)
   const isToday = (dateString: string) => {
     const d = new Date(dateString);
     const today = new Date();
@@ -2373,7 +2397,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       const inUsd = convertCurrency(amt, cur, 'USD', exchangeRates);
       totalRevenueUsdConverted += inUsd;
 
-      // Net profit calculation
       if (o.net_profit_usd !== undefined) {
         estimatedNetProfitUsd += o.net_profit_usd;
       } else {
@@ -2395,7 +2418,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
     const pendingOrders = orders.filter((o) => o.status === 'pending_verification' || o.status === 'pending_proof' || o.status === 'pending').length;
     const totalKeysRemaining = digitalItems.filter((k) => !k.is_delivered).length;
-    const lowStockCount = products.filter((p) => p.stockCount < 3).length; // Alerte < 3 unités comme demandé !
+    const lowStockCount = products.filter((p) => p.stockCount < 3).length;
 
     return {
       totalRevenue: revenueByCurrency.DZD,
@@ -2419,6 +2442,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   return (
     <ShopContext.Provider
       value={{
+        currentLang,
+        setCurrentLang,
+
         activeTab,
         setActiveTab,
         selectedProductSlug,
